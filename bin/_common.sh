@@ -1,7 +1,6 @@
 # Sourced by the sibling scripts.
 
 PLUGIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-EXTENSION_DIR="$PLUGIN_DIR/extension"
 
 # Chromium's --app= produces WM_CLASS ending in -x.com__<path>-Default for
 # any brave/chrome/chromium/edge/opera/vivaldi derivative. The loose match

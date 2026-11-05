@@ -49,8 +49,8 @@ check_browser() {
     brave*|google-chrome*|chromium*|microsoft-edge*|opera*|vivaldi*|helium*)
       log "default browser: $b (ok)" ;;
     *)
-      log "WARNING: default browser '$b' is not Chromium-based. The widget"
-      log "         will show the X icon but no live count. Install a Chromium"
+      log "WARNING: default browser '$b' is not Chromium-based. The popover"
+      log "         needs --app= with a stable WM_CLASS. Install a Chromium"
       log "         browser (brave/chrome/chromium/edge/opera/vivaldi) and set it as default." ;;
   esac
 }

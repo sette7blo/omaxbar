@@ -1,16 +1,19 @@
 # x-notifications — Omarchy plugin
 
-A bar widget that shows the unread X.com notification count and toggles a
-hidden X web app on click. No X API, no paid tier — the count is scraped
-from the DOM by a small browser extension that prefixes the webapp window
-title with `(N) ` so the shell can read it out of `hyprctl clients`.
+A bar widget that toggles a hidden X web app popover on click. The 𝕏
+icon in the bar opens and closes the popover; focusing another window
+auto-hides it.
+
+The plugin keeps the `x-notifications` name for compatibility with
+earlier installs; the unread-count scraping it originally shipped has
+been removed.
 
 ## Requirements
 
 - Omarchy (Hyprland + QuickShell bar).
 - A Chromium-based default browser: Brave, Chrome, Chromium, Edge, Opera,
-  Vivaldi, or Helium. Firefox is not supported (no `--app=` with stable
-  WM_CLASS, no unsigned extensions on release channel).
+  Vivaldi, or Helium. Firefox is not supported (no `--app=` with a stable
+  WM_CLASS).
 
 ## Install
 
@@ -54,7 +57,7 @@ preserves your values):
 
 After editing, re-run `install.sh` to regenerate `hypr.lua` and
 `autostart.lua`, then close the running X popover window so the next
-toggle re-launches it with the new URL/flags.
+toggle re-launches it with the new URL.
 
 ## Uninstall
 
@@ -66,12 +69,8 @@ Reverses each install step. Does not delete the plugin directory.
 
 ## How it works
 
-- `extension/` — Chrome MV3 extension loaded via `--load-extension=`. Polls
-  the DOM for the bell count every 1.5s and prefixes `document.title`.
-- `BarWidget.qml` — Omarchy QML widget. Polls `bin/x-notifications` every
-  30s and spawns `bin/x-notifications-toggle` on click.
-- `bin/x-notifications` — reads the title out of `hyprctl clients -j` and
-  emits Waybar-style JSON.
+- `BarWidget.qml` — Omarchy QML widget. 𝕏 button that spawns
+  `bin/x-notifications-toggle` on click.
 - `bin/x-notifications-toggle` — toggles `special:xnotif`, launching the
   webapp first if needed.
 - `bin/x-notifications-watcher` — listens on the Hyprland event socket and
@@ -82,7 +81,6 @@ Reverses each install step. Does not delete the plugin directory.
 
 ## Advanced
 
-Icon and badge glyphs live in `bin/x-notifications`. The matched WM_CLASS
-regex is `-x\.com__.*-Default$` (in `bin/_common.sh`), which matches any
-x.com path on any Chromium derivative. If you point `URL` at a different
-host, update `CLASS_RE` to match.
+The matched WM_CLASS regex is `-x\.com__.*-Default$` (in `bin/_common.sh`),
+which matches any x.com path on any Chromium derivative. If you point
+`URL` at a different host, update `CLASS_RE` to match.

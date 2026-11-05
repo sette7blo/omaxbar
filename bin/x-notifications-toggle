@@ -10,11 +10,7 @@ running() {
 }
 
 if ! running; then
-  omarchy-launch-webapp "$URL" \
-    --disable-background-timer-throttling \
-    --disable-renderer-backgrounding \
-    --disable-backgrounding-occluded-windows \
-    --load-extension="$EXTENSION_DIR" &
+  omarchy-launch-webapp "$URL" &
   for _ in {1..25}; do sleep 0.2; running && break; done
 fi
 
