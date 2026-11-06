@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.sette7blo.omaxbar",
   "name": "X Bar",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": "sette7blo",
   "license": "MIT",
   "description": "Bar button that toggles a floating X.com popover. Right-click opens the plugin's config.sh.",
