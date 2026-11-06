@@ -3,6 +3,7 @@
 #
 #   omaxbar-toggle show    — make sure it is visible
 #   omaxbar-toggle hide    — make sure it is hidden
+#   omaxbar-toggle ensure  — make sure the hidden webapp is running (no visibility change)
 #   omaxbar-toggle         — flip it (legacy)
 
 set -u
@@ -40,6 +41,8 @@ case "$mode" in
     visible || flip ;;
   hide)
     visible && flip || true ;;
+  ensure)
+    ensure_running ;;
   *)
     ensure_running
     flip ;;

@@ -33,9 +33,30 @@ seed_config() {
   : "${HEIGHT:?HEIGHT must be set in config.sh}"
 }
 
+# Chromium derives WM_CLASS from --app= URLs as "<host>__<path with / → _>".
+#   https://x.com/home          → x.com__home
+#   https://x.com/              → x.com__
+#   https://x.com/compose/post  → x.com__compose_post
+url_to_class_suffix() {
+  local url=$1 stripped host path
+  stripped=${url#*://}
+  host=${stripped%%/*}
+  if [[ $stripped == */* ]]; then
+    path=${stripped#*/}
+    path=${path//\//_}
+  else
+    path=""
+  fi
+  printf '%s__%s' "$host" "$path"
+}
+
 generate_lua() {
   local x_offset=$((WIDTH + 12))
-  local tmpl out
+  local class_suffix class_suffix_re tmpl out
+  class_suffix=$(url_to_class_suffix "$URL")
+  # Escape dots as [.] character class — survives sed replacement without needing
+  # backslash doubling, and parses fine as a regex inside the Lua string literal.
+  class_suffix_re=${class_suffix//./[.]}
   for name in hypr autostart; do
     tmpl="$PLUGIN_DIR/$name.lua.tmpl"
     out="$PLUGIN_DIR/$name.lua"
@@ -44,6 +65,8 @@ generate_lua() {
         -e "s|\${WORKSPACE}|$WORKSPACE|g" \
         -e "s|\${URL}|$URL|g" \
         -e "s|\${X_OFFSET}|$x_offset|g" \
+        -e "s|\${CLASS_SUFFIX_RE}|$class_suffix_re|g" \
+        -e "s|\${PLUGIN_DIR}|$PLUGIN_DIR|g" \
         "$tmpl" > "$out"
     log "generated $(basename "$out") from $(basename "$tmpl")"
   done
@@ -95,8 +118,11 @@ enable_widget() {
 }
 
 launch_webapp_now() {
+  local class_suffix re
+  class_suffix=$(url_to_class_suffix "$URL")
+  re="-${class_suffix//./\\.}-Default\$"
   if hyprctl clients -j 2>/dev/null | \
-     jq -e '.[] | select(.class | test("-x\\.com__.*-Default$"))' >/dev/null; then
+     jq -e --arg re "$re" '.[] | select(.class | test($re))' >/dev/null; then
     return
   fi
   log "launching X webapp (hidden in special:$WORKSPACE)"
