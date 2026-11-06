@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
-# Reverse everything install.sh wrote. Leaves the plugin directory behind.
+# Reverse what install.sh wrote. Leaves the plugin directory behind.
 
 set -euo pipefail
 
 PLUGIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_NAME="x-notifications"
+PLUGIN_NAME="io.github.sette7blo.omaxbar"
 HYPRLAND_LUA="$HOME/.config/hypr/hyprland.lua"
-SYSTEMD_DIR="$HOME/.config/systemd/user"
-SYSTEMD_UNIT="x-notifications-watcher.service"
 BEGIN="-- BEGIN $PLUGIN_NAME plugin (managed by install.sh)"
 END="-- END $PLUGIN_NAME plugin"
 
 # shellcheck source=bin/_common.sh
 source "$PLUGIN_DIR/bin/_common.sh"
 
-log() { printf '[x-notifications] %s\n' "$*"; }
+log() { printf '[omaxbar] %s\n' "$*"; }
 
 remove_hyprland_requires() {
   [[ -f $HYPRLAND_LUA ]] || return 0
@@ -29,15 +27,8 @@ remove_hyprland_requires() {
   mv "$tmp" "$HYPRLAND_LUA"
 }
 
-remove_systemd_unit() {
-  systemctl --user disable --now "$SYSTEMD_UNIT" 2>/dev/null || true
-  rm -f "$SYSTEMD_DIR/$SYSTEMD_UNIT"
-  systemctl --user daemon-reload
-  log "systemd unit removed"
-}
-
 disable_widget() {
-  omarchy plugin disable "$PLUGIN_NAME" 2>&1 | sed 's/^/[x-notifications] /' || true
+  omarchy plugin disable "$PLUGIN_NAME" 2>&1 | sed 's/^/[omaxbar] /' || true
 }
 
 kill_webapp() {
@@ -50,7 +41,6 @@ kill_webapp() {
 }
 
 remove_hyprland_requires
-remove_systemd_unit
 disable_widget
 kill_webapp
 hyprctl reload >/dev/null && log "reloaded hyprland config"

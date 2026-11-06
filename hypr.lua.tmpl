@@ -13,10 +13,4 @@ hl.config({
   decoration = {
     blur = { special = false },
   },
-  input = {
-    -- Clicks on windows below the special workspace pass through, so clicking
-    -- a terminal while the X panel is open focuses it (and Hyprland then hides
-    -- special:${WORKSPACE} via hide_special_on_workspace_change).
-    special_fallthrough = true,
-  },
 })

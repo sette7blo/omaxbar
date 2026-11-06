@@ -1,4 +1,4 @@
-# x-notifications config. Copied to config.sh on first install.
+# omaxbar config. Copied to config.sh on first install.
 # Edit values and re-run install.sh to apply hypr-side changes.
 
 # URL the hidden webapp loads.

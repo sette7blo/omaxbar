@@ -1,18 +1,19 @@
 {
   "schemaVersion": 1,
-  "id": "x-notifications",
-  "name": "X notifications",
+  "id": "io.github.sette7blo.omaxbar",
+  "name": "X Bar",
   "version": "0.1.2",
   "author": "sette7blo",
-  "description": "Bar button that toggles a popover X web app on click. Works with any Chromium-based default browser.",
-  "homepage": "https://github.com/sette7blo/omarchy-x-notifications",
+  "license": "MIT",
+  "description": "Bar button that toggles a floating X.com popover. Right-click opens the plugin's config.sh.",
+  "homepage": "https://github.com/sette7blo/omaxbar",
   "kinds": ["bar-widget"],
   "entryPoints": {
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "X notifications",
-    "description": "𝕏 button in the bar, toggles a popover on click",
+    "displayName": "X Bar",
+    "description": "𝕏 button that toggles a floating X popover; right-click for config.",
     "category": "Status",
     "allowMultiple": false,
     "defaultSection": "right"

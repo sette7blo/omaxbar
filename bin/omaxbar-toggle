@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Set the X popover workspace visibility.
+#
+#   omaxbar-toggle show    — make sure it is visible
+#   omaxbar-toggle hide    — make sure it is hidden
+#   omaxbar-toggle         — flip it (legacy)
+
+set -u
+source "$(dirname -- "${BASH_SOURCE[0]}")/_common.sh"
+
+mode="${1:-toggle}"
+
+running() {
+  hyprctl clients -j 2>/dev/null | \
+    jq -e --arg re "$CLASS_RE" '.[] | select(.class | test($re))' >/dev/null
+}
+
+# True if the special workspace is overlaid on the active workspace. The
+# active workspace reports as "special:$WORKSPACE" while the overlay has
+# focus, but Hyprland also exposes it on the monitor's `specialWorkspace`.
+visible() {
+  hyprctl monitors -j 2>/dev/null | \
+    jq -e --arg w "special:$WORKSPACE" '.[].specialWorkspace.name == $w' >/dev/null
+}
+
+ensure_running() {
+  running && return
+  omarchy-launch-webapp "$URL" &
+  for _ in {1..25}; do
+    sleep 0.2
+    running && return
+  done
+}
+
+flip() { hyprctl dispatch "hl.dsp.workspace.toggle_special(\"$WORKSPACE\")" >/dev/null; }
+
+case "$mode" in
+  show)
+    ensure_running
+    visible || flip ;;
+  hide)
+    visible && flip || true ;;
+  *)
+    ensure_running
+    flip ;;
+esac

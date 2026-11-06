@@ -5,9 +5,10 @@ import qs.Ui
 
 BarWidget {
   id: root
-  moduleName: "x-notifications"
+  moduleName: "io.github.sette7blo.omaxbar"
 
-  readonly property string pluginDir: (Quickshell.env("HOME") || "") + "/.config/omarchy/plugins/x-notifications"
+  readonly property string pluginDir: (Quickshell.env("HOME") || "") + "/.config/omarchy/plugins/io.github.sette7blo.omaxbar"
+  property bool popoverVisible: false
 
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
@@ -18,7 +19,15 @@ BarWidget {
     bar: root.bar
     text: "𝕏"
     slotSize: Style.bar.statusSlot
-    tooltipText: "X popover"
-    onPressed: if (root.bar) root.bar.run(root.pluginDir + "/bin/x-notifications-toggle")
+    active: root.popoverVisible
+    tooltipText: "X Bar"
+    onPressed: function(b) {
+      if (b === Qt.LeftButton) {
+        root.popoverVisible = !root.popoverVisible
+        if (root.bar) root.bar.run(root.pluginDir + "/bin/omaxbar-toggle " + (root.popoverVisible ? "show" : "hide"))
+      } else if (b === Qt.RightButton) {
+        if (root.bar) root.bar.run(root.pluginDir + "/bin/omaxbar-config")
+      }
+    }
   }
 }

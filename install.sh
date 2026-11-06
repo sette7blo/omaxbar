@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
-# Idempotent installer for the x-notifications Omarchy plugin.
+# Idempotent installer for the omaxbar Omarchy plugin.
 
 set -euo pipefail
 
 PLUGIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_NAME="x-notifications"
+PLUGIN_NAME="io.github.sette7blo.omaxbar"
 HYPRLAND_LUA="$HOME/.config/hypr/hyprland.lua"
-SYSTEMD_DIR="$HOME/.config/systemd/user"
-SYSTEMD_UNIT="x-notifications-watcher.service"
 BEGIN="-- BEGIN $PLUGIN_NAME plugin (managed by install.sh)"
 END="-- END $PLUGIN_NAME plugin"
 
-log() { printf '[x-notifications] %s\n' "$*"; }
+log() { printf '[omaxbar] %s\n' "$*"; }
 
 seed_config() {
   if [[ ! -f $PLUGIN_DIR/config.sh ]]; then
@@ -62,35 +60,29 @@ install_hyprland_requires() {
     return
   fi
   log "appending plugin requires to $HYPRLAND_LUA"
+  # dofile (not require) because PLUGIN_NAME contains dots, which Lua's
+  # require treats as path separators.
   cat >> "$HYPRLAND_LUA" <<EOF
 
 $BEGIN
-require("omarchy.plugins.$PLUGIN_NAME.autostart")
-require("omarchy.plugins.$PLUGIN_NAME.hypr")
+dofile(os.getenv("HOME") .. "/.config/omarchy/plugins/$PLUGIN_NAME/autostart.lua")
+dofile(os.getenv("HOME") .. "/.config/omarchy/plugins/$PLUGIN_NAME/hypr.lua")
 $END
 EOF
 }
 
-install_systemd_unit() {
-  mkdir -p "$SYSTEMD_DIR"
-  local target="$SYSTEMD_DIR/$SYSTEMD_UNIT" src="$PLUGIN_DIR/systemd/$SYSTEMD_UNIT"
-  if [[ ! -L $target || "$(readlink "$target")" != "$src" ]]; then
-    rm -f "$target"
-    ln -s "$src" "$target"
-    log "symlinked $target -> $src"
-  fi
-  systemctl --user daemon-reload
-  systemctl --user enable --now "$SYSTEMD_UNIT"
-  log "systemd unit enabled"
-}
-
 enable_widget() {
-  if omarchy plugin list --json 2>/dev/null | \
-     jq -e --arg id "$PLUGIN_NAME" '.[] | select(.id == $id) | .enabled' >/dev/null; then
-    log "widget already enabled (skip)"
-    return
-  fi
-  omarchy plugin enable "$PLUGIN_NAME" right 2>&1 | sed 's/^/[x-notifications] /'
+  # omarchy-shell can be transiently busy; retry the already-enabled check.
+  for _ in 1 2 3 4 5; do
+    if omarchy plugin list --json 2>/dev/null | \
+       jq -e --arg id "$PLUGIN_NAME" '.[] | select(.id == $id) | .enabled' >/dev/null; then
+      log "widget already enabled (skip)"
+      return
+    fi
+    sleep 0.5
+  done
+  omarchy plugin enable "$PLUGIN_NAME" right 2>&1 | sed 's/^/[omaxbar] /' || \
+    log "WARNING: enable failed (shell busy?). Re-run install.sh or run: omarchy plugin enable $PLUGIN_NAME right"
 }
 
 launch_webapp_now() {
@@ -98,12 +90,12 @@ launch_webapp_now() {
      jq -e '.[] | select(.class | test("-x\\.com__.*-Default$"))' >/dev/null; then
     return
   fi
-  log "launching X webapp now so you don't need to log out"
-  "$PLUGIN_DIR/bin/x-notifications-toggle" >/dev/null &
+  log "launching X webapp (hidden in special:$WORKSPACE)"
+  omarchy-launch-webapp "$URL" >/dev/null 2>&1 &
   disown
 }
 
-for dep in jq socat hyprctl sed omarchy-launch-webapp omarchy-cmd-default-browser; do
+for dep in jq hyprctl sed omarchy-launch-webapp omarchy-cmd-default-browser; do
   command -v "$dep" >/dev/null || { log "ERROR: missing dependency: $dep"; exit 1; }
 done
 
@@ -112,8 +104,7 @@ seed_config
 generate_lua
 check_browser
 install_hyprland_requires
-install_systemd_unit
 enable_widget
 hyprctl reload >/dev/null && log "reloaded hyprland config"
 launch_webapp_now
-log "done. Left-click the 𝕏 widget to open the X popover."
+log "done. Click 𝕏 to toggle the popover; right-click opens config.sh."

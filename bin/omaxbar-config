@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Open config.sh in the user's default editor, inside the default terminal.
+
+set -u
+PLUGIN_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+exec omarchy-launch-config-editor "$PLUGIN_DIR/config.sh"
