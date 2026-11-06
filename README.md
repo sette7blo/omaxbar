@@ -14,15 +14,27 @@ again.
 
 ## Install
 
+Any of these works — the widget self-bootstraps on first load:
+
 ```sh
+# CLI
 omarchy plugin add https://github.com/sette7blo/omaxbar --enable
+```
+
+Or install through **omaplug** (GUI) and pick `omaxbar` from the list.
+
+**What "self-bootstrap" means:** the first time `BarWidget.qml` loads, it
+runs `install.sh --if-needed`, which **appends two `dofile()` lines to
+`~/.config/hypr/hyprland.lua`** (inside a sentinel block), generates
+`hypr.lua`/`autostart.lua` from templates, runs `hyprctl reload`, and
+launches the hidden webapp. Subsequent loads are no-ops. If you'd rather
+do it explicitly, run the installer yourself:
+
+```sh
 ~/.config/omarchy/plugins/io.github.sette7blo.omaxbar/install.sh
 ```
 
-The first command is the standard Omarchy flow: clone into
-`~/.config/omarchy/plugins/io.github.sette7blo.omaxbar` and register the bar widget.
-The second command does the extras `omarchy plugin add` doesn't handle.
-Both commands are idempotent, so re-running them is safe.
+Both paths are idempotent and safe to re-run.
 
 `install.sh`:
 

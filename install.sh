@@ -11,6 +11,15 @@ END="-- END $PLUGIN_NAME plugin"
 
 log() { printf '[omaxbar] %s\n' "$*"; }
 
+# --if-needed: bail out silently if everything looks already wired.
+# Used by BarWidget.qml to self-bootstrap after omaplug / `omarchy plugin add`.
+if [[ ${1:-} == --if-needed ]]; then
+  if [[ -f $PLUGIN_DIR/hypr.lua && -f $PLUGIN_DIR/autostart.lua && -f $PLUGIN_DIR/config.sh ]] \
+     && grep -qF -- "$BEGIN" "$HYPRLAND_LUA" 2>/dev/null; then
+    exit 0
+  fi
+fi
+
 seed_config() {
   if [[ ! -f $PLUGIN_DIR/config.sh ]]; then
     cp "$PLUGIN_DIR/config.sh.example" "$PLUGIN_DIR/config.sh"

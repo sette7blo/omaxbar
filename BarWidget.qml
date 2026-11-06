@@ -13,6 +13,10 @@ BarWidget {
   implicitWidth: button.implicitWidth
   implicitHeight: button.implicitHeight
 
+  Component.onCompleted: {
+    if (root.bar) root.bar.run(root.pluginDir + "/install.sh --if-needed")
+  }
+
   BarIconButton {
     id: button
     anchors.fill: parent
