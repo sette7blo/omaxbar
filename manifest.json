@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "id": "io.github.sette7blo.omaxbar",
-  "name": "X Bar",
-  "version": "0.2.1",
+  "name": "Omaxbar",
+  "version": "0.3.0",
   "author": "sette7blo",
   "license": "MIT",
-  "description": "Bar button that toggles a floating X.com popover. Right-click opens the plugin's config.sh.",
+  "description": "A floating 𝕏 (X.com) popover for your Omarchy bar — tap to open, tap to hide. No extra window, no tab clutter.",
   "homepage": "https://github.com/sette7blo/omaxbar",
   "kinds": ["bar-widget"],
   "entryPoints": {
     "barWidget": "BarWidget.qml"
   },
   "barWidget": {
-    "displayName": "X Bar",
-    "description": "𝕏 button that toggles a floating X popover; right-click for config.",
+    "displayName": "Omaxbar",
+    "description": "Toggle a floating 𝕏 popover from the bar; right-click for config.",
     "category": "Status",
     "allowMultiple": false,
     "defaultSection": "right"
