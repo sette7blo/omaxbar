@@ -118,15 +118,8 @@ enable_widget() {
 }
 
 launch_webapp_now() {
-  local class_suffix re
-  class_suffix=$(url_to_class_suffix "$URL")
-  re="-${class_suffix//./\\.}-Default\$"
-  if hyprctl clients -j 2>/dev/null | \
-     jq -e --arg re "$re" '.[] | select(.class | test($re))' >/dev/null; then
-    return
-  fi
-  log "launching X webapp (hidden in special:$WORKSPACE)"
-  omarchy-launch-webapp "$URL" >/dev/null 2>&1 &
+  log "starting X webapp (hidden in special:$WORKSPACE)"
+  "$PLUGIN_DIR/bin/omaxbar-toggle" ensure >/dev/null 2>&1 &
   disown
 }
 
