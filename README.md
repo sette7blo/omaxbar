@@ -68,6 +68,19 @@ re-run `install.sh` to regenerate `hypr.lua` and `autostart.lua`, then
 close the running X popover window so the next toggle re-launches it
 with the new URL/size.
 
+## Separate browser profile
+
+The webapp runs in its own browser profile at
+`~/.local/share/omaxbar/browser` (a separate `--user-data-dir`), so it is a
+separate browser process. Links opened by other apps or plugins always go
+to your regular browser and never land in the popover. The first time you
+open the popover after upgrading from 0.3 or earlier, you need to log in
+to X once; the old shared-profile X window is closed automatically.
+
+While the popover has focus, Hyprland would place any newly opened window
+inside it. The widget watches for this, moves the window to the workspace
+underneath, and closes the popover.
+
 ## Uninstall
 
 ```sh
@@ -75,15 +88,19 @@ with the new URL/size.
 ```
 
 Removes the hyprland.lua plugin block, disables the widget, and closes
-the webapp window. Does not delete the plugin directory.
+the webapp window. Does not delete the plugin directory or the browser
+profile at `~/.local/share/omaxbar/browser`.
 
 ## How it works
 
 - `BarWidget.qml` — Omarchy QML widget. Left-click runs
-  `bin/omaxbar-toggle show|hide`; right-click runs
-  `bin/omaxbar-config`.
-- `bin/omaxbar-toggle` — toggles `special:xnotif` via `hyprctl`,
-  launching the webapp first if it isn't running.
+  `bin/omaxbar-toggle`; right-click runs `bin/omaxbar-config`. The icon
+  state follows Hyprland's `activespecial` events, so it stays correct
+  when the popover is closed by a keybind or workspace switch.
+- `bin/omaxbar-toggle` — shows or hides `special:xnotif` based on its
+  real state, launching the webapp first if it isn't running. Also
+  `status` (prints 1/0) and `evict <address>` (moves a foreign window
+  out of the popover).
 - `bin/omaxbar-config` — opens `config.sh` via
   `omarchy-launch-config-editor` (your default editor in your default
   terminal).

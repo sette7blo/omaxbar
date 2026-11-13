@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "io.github.sette7blo.omaxbar",
   "name": "Omaxbar",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "author": "sette7blo",
   "license": "MIT",
   "description": "A floating 𝕏 (X.com) popover for your Omarchy bar — tap to open, tap to hide. No extra window, no tab clutter.",

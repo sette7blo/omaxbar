@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Set the X popover workspace visibility.
+# Control the X popover.
 #
-#   omaxbar-toggle show    — make sure it is visible
-#   omaxbar-toggle hide    — make sure it is hidden
-#   omaxbar-toggle ensure  — make sure the hidden webapp is running (no visibility change)
-#   omaxbar-toggle         — flip it (legacy)
+#   omaxbar-toggle           — show it if hidden, hide it if shown
+#   omaxbar-toggle show      — make sure it is visible
+#   omaxbar-toggle hide      — make sure it is hidden
+#   omaxbar-toggle ensure    — make sure the hidden webapp is running
+#   omaxbar-toggle status    — print 1 if visible, 0 if hidden
+#   omaxbar-toggle evict ADDR — move a foreign window out of the popover
 
 set -u
 source "$(dirname -- "${BASH_SOURCE[0]}")/_common.sh"
@@ -12,28 +14,62 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/_common.sh"
 mode="${1:-toggle}"
 
 running() {
-  hyprctl clients -j 2>/dev/null | \
-    jq -e --arg re "$CLASS_RE" '.[] | select(.class | test($re))' >/dev/null
+  local addr pid
+  while read -r addr pid; do
+    owns_pid "$pid" && return 0
+  done < <(class_windows)
+  return 1
 }
 
-# True if the special workspace is overlaid on the active workspace. The
-# active workspace reports as "special:$WORKSPACE" while the overlay has
-# focus, but Hyprland also exposes it on the monitor's `specialWorkspace`.
+# Webapp windows from the shared browser profile (pre-0.4 installs) would still
+# be pulled into the popover by the window rule; close them so ours replaces them.
+close_strays() {
+  local addr pid
+  while read -r addr pid; do
+    owns_pid "$pid" && continue
+    hyprctl dispatch "hl.dsp.window.close({ window = \"address:$addr\" })" >/dev/null
+  done < <(class_windows)
+}
+
+# The special workspace shows on top of the active one; Hyprland reports it on
+# the monitor's specialWorkspace while it is open.
 visible() {
   hyprctl monitors -j 2>/dev/null | \
-    jq -e --arg w "special:$WORKSPACE" '.[].specialWorkspace.name == $w' >/dev/null
+    jq -e --arg w "special:$WORKSPACE" 'any(.[]; .specialWorkspace.name == $w)' >/dev/null
 }
 
 ensure_running() {
+  close_strays
   running && return
-  omarchy-launch-webapp "$URL" &
-  for _ in {1..25}; do
+  mkdir -p "$PROFILE_DIR"
+  omarchy-launch-webapp "$URL" --user-data-dir="$PROFILE_DIR" >/dev/null 2>&1 &
+  # A fresh profile takes a few seconds to create on first launch.
+  for _ in {1..50}; do
     sleep 0.2
     running && return
   done
 }
 
 flip() { hyprctl dispatch "hl.dsp.workspace.toggle_special(\"$WORKSPACE\")" >/dev/null; }
+
+# Hyprland opens new windows on the focused workspace, which is the popover
+# while it has focus. Send anything that is not the webapp to the regular
+# workspace underneath and close the popover so the new window is in view.
+evict() {
+  local addr=${1:-} info ws pid target
+  [[ -n $addr ]] || return 0
+  [[ $addr == 0x* ]] || addr="0x$addr"
+  info=$(hyprctl clients -j 2>/dev/null | \
+    jq -r --arg a "$addr" 'first(.[] | select(.address == $a) | "\(.workspace.name) \(.pid)") // empty')
+  read -r ws pid <<<"$info"
+  [[ $ws == "special:$WORKSPACE" ]] || return 0
+  owns_pid "$pid" && return 0
+  target=$(hyprctl monitors -j 2>/dev/null | \
+    jq -r --arg w "special:$WORKSPACE" 'first(.[] | select(.specialWorkspace.name == $w) | .activeWorkspace.id) // empty')
+  visible && flip
+  [[ -n $target ]] || target=$(hyprctl activeworkspace -j | jq -r '.id')
+  hyprctl dispatch "hl.dsp.window.move({ workspace = \"$target\", window = \"address:$addr\", follow = true })" >/dev/null
+}
 
 case "$mode" in
   show)
@@ -43,7 +79,15 @@ case "$mode" in
     visible && flip || true ;;
   ensure)
     ensure_running ;;
+  status)
+    visible && echo 1 || echo 0 ;;
+  evict)
+    evict "${2:-}" ;;
   *)
-    ensure_running
-    flip ;;
+    if visible; then
+      flip
+    else
+      ensure_running
+      flip
+    fi ;;
 esac
