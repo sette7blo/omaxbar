@@ -11,6 +11,10 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v0.4.1] — 2026-11-15
+
+- The manifest names a Monero address for tips (`"funding": { "monero": "..." }`), so wallets and plugin managers that read it can offer a tip to the author.
+- `LICENSE` names `sette7blo` as the copyright holder.
 - Added this changelog and a CI workflow. Pushes and pull requests are linted with shellcheck and the manifest is validated; a version tag must match `manifest.json` and creates the GitHub Release from this file.
 
 ## [v0.4.0] — 2026-11-13
@@ -48,7 +52,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 - Initial release.
 
-[Unreleased]: https://github.com/sette7blo/omaxbar/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/sette7blo/omaxbar/compare/v0.4.1...HEAD
+[v0.4.1]: https://github.com/sette7blo/omaxbar/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/sette7blo/omaxbar/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sette7blo/omaxbar/compare/v0.2.1...v0.3.0
 [v0.2.1]: https://github.com/sette7blo/omaxbar/compare/v0.2.0...v0.2.1
