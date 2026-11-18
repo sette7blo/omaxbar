@@ -11,6 +11,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v0.4.2] — 2026-11-18
+
 - An X webapp you opened yourself for the same URL is no longer closed when the popover starts; if the window rule pulls it into the popover, it is moved back to your current workspace.
 - `uninstall.sh` closes only the popover's own webapp window, not another window for the same URL.
 - `uninstall.sh` removes the `hyprland.lua` block only when it is exactly what `install.sh` wrote. A missing or repeated marker, or an edited block, used to risk deleting the rest of the file; now the file is left unchanged with a warning. A symlinked `hyprland.lua` stays a symlink.
@@ -56,7 +58,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 - Initial release.
 
-[Unreleased]: https://github.com/sette7blo/omaxbar/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/sette7blo/omaxbar/compare/v0.4.2...HEAD
+[v0.4.2]: https://github.com/sette7blo/omaxbar/compare/v0.4.1...v0.4.2
 [v0.4.1]: https://github.com/sette7blo/omaxbar/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/sette7blo/omaxbar/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sette7blo/omaxbar/compare/v0.2.1...v0.3.0
