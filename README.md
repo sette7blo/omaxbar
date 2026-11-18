@@ -75,7 +75,9 @@ The webapp runs in its own browser profile at
 separate browser process. Links opened by other apps or plugins always go
 to your regular browser and never land in the popover. The first time you
 open the popover after upgrading from 0.3 or earlier, you need to log in
-to X once; the old shared-profile X window is closed automatically.
+to X once. An X webapp you open yourself for the same URL, including one
+left over from 0.3 or earlier, is never closed: if the window rule pulls
+it into the popover, it is moved back to your current workspace.
 
 While the popover has focus, Hyprland would place any newly opened window
 inside it. The widget watches for this, moves the window to the workspace
@@ -88,7 +90,10 @@ underneath, and closes the popover.
 ```
 
 Removes the hyprland.lua plugin block, disables the widget, and closes
-the webapp window. Does not delete the plugin directory or the browser
+the popover's own webapp window (other X windows are left open). The
+block is removed only if it is exactly what `install.sh` wrote; if a
+marker is missing or the block was edited, `hyprland.lua` is left
+unchanged and the script tells you which lines to remove by hand. Does not delete the plugin directory or the browser
 profile at `~/.local/share/omaxbar/browser`.
 
 ## How it works

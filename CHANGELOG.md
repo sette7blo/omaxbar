@@ -11,6 +11,10 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+- An X webapp you opened yourself for the same URL is no longer closed when the popover starts; if the window rule pulls it into the popover, it is moved back to your current workspace.
+- `uninstall.sh` closes only the popover's own webapp window, not another window for the same URL.
+- `uninstall.sh` removes the `hyprland.lua` block only when it is exactly what `install.sh` wrote. A missing or repeated marker, or an edited block, used to risk deleting the rest of the file; now the file is left unchanged with a warning. A symlinked `hyprland.lua` stays a symlink.
+
 ## [v0.4.1] — 2026-11-15
 
 - The manifest names a Monero address for tips (`"funding": { "monero": "..." }`), so wallets and plugin managers that read it can offer a tip to the author.

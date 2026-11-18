@@ -21,14 +21,18 @@ running() {
   return 1
 }
 
-# Webapp windows from the shared browser profile (pre-0.4 installs) would still
-# be pulled into the popover by the window rule; close them so ours replaces them.
-close_strays() {
-  local addr pid
-  while read -r addr pid; do
+# The window rule also pulls same-URL webapps the user opened themselves (or
+# ones left over from pre-0.4 installs) into the popover. Those windows are not
+# ours to close; move them back to the regular workspace, without focusing them.
+move_strays() {
+  local addr pid ws target
+  while read -r addr pid ws; do
+    [[ $ws == "special:$WORKSPACE" ]] || continue
     owns_pid "$pid" && continue
-    hyprctl dispatch "hl.dsp.window.close({ window = \"address:$addr\" })" >/dev/null
-  done < <(class_windows)
+    target=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.id // empty')
+    [[ -n $target ]] || continue
+    hyprctl dispatch "hl.dsp.window.move({ workspace = \"$target\", window = \"address:$addr\", follow = false })" >/dev/null
+  done < <(class_windows_ws)
 }
 
 # The special workspace shows on top of the active one; Hyprland reports it on
@@ -39,7 +43,7 @@ visible() {
 }
 
 ensure_running() {
-  close_strays
+  move_strays
   running && return
   mkdir -p "$PROFILE_DIR"
   omarchy-launch-webapp "$URL" --user-data-dir="$PROFILE_DIR" >/dev/null 2>&1 &

@@ -14,30 +14,54 @@ source "$PLUGIN_DIR/bin/_common.sh"
 
 log() { printf '[omaxbar] %s\n' "$*"; }
 
+# Removes only the exact block install.sh appended. If the markers are missing,
+# repeated, or anything else sits between them, the file is left untouched.
 remove_hyprland_requires() {
   [[ -f $HYPRLAND_LUA ]] || return 0
   grep -qF -- "$BEGIN" "$HYPRLAND_LUA" || return 0
-  log "removing plugin block from $HYPRLAND_LUA"
+  local plugin_path="/.config/omarchy/plugins/$PLUGIN_NAME"
+  local line1="dofile(os.getenv(\"HOME\") .. \"$plugin_path/autostart.lua\")"
+  local line2="dofile(os.getenv(\"HOME\") .. \"$plugin_path/hypr.lua\")"
   local tmp; tmp=$(mktemp)
-  awk -v b="$BEGIN" -v e="$END" '
-    index($0, b) == 1 { skip = 1; next }
-    skip && index($0, e) == 1 { skip = 0; next }
-    !skip
-  ' "$HYPRLAND_LUA" > "$tmp"
-  mv "$tmp" "$HYPRLAND_LUA"
+  if ! awk -v b="$BEGIN" -v e="$END" -v l1="$line1" -v l2="$line2" '
+    { lines[NR] = $0 }
+    $0 == b { nb++; start = NR }
+    $0 == e { ne++; stop = NR }
+    END {
+      if (nb != 1 || ne != 1 || stop != start + 3) exit 1
+      if (lines[start + 1] != l1 || lines[start + 2] != l2) exit 1
+      # Also drop the blank line install.sh put before the block.
+      if (start > 1 && lines[start - 1] == "") start--
+      for (i = 1; i <= NR; i++) if (i < start || i > stop) print lines[i]
+    }
+  ' "$HYPRLAND_LUA" > "$tmp"; then
+    rm -f "$tmp"
+    log "WARNING: the plugin block in $HYPRLAND_LUA is not the one install.sh wrote"
+    log "         (a marker is missing or repeated, or it was edited). Left the file"
+    log "         unchanged; remove the lines between these markers by hand:"
+    log "           $BEGIN"
+    log "           $END"
+    return 0
+  fi
+  log "removing plugin block from $HYPRLAND_LUA"
+  # Write in place so a symlinked hyprland.lua and its permissions are kept.
+  cat "$tmp" > "$HYPRLAND_LUA"
+  rm -f "$tmp"
 }
 
 disable_widget() {
   omarchy plugin disable "$PLUGIN_NAME" 2>&1 | sed 's/^/[omaxbar] /' || true
 }
 
+# Closes only windows of the browser running on the plugin's own profile; a
+# same-URL webapp the user opened elsewhere is left alone.
 kill_webapp() {
-  local addr
-  addr=$(hyprctl clients -j 2>/dev/null | \
-    jq -r --arg re "$CLASS_RE" 'first(.[] | select(.class | test($re)) | .address) // empty')
-  [[ -n $addr ]] || return 0
-  hyprctl dispatch "hl.dsp.window.close({window=\"address:$addr\"})" >/dev/null || true
-  log "closed running X webapp window"
+  local addr pid
+  while read -r addr pid; do
+    owns_pid "$pid" || continue
+    hyprctl dispatch "hl.dsp.window.close({window=\"address:$addr\"})" >/dev/null || true
+    log "closed the omaxbar webapp window"
+  done < <(class_windows)
 }
 
 remove_hyprland_requires
