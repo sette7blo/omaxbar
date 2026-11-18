@@ -37,6 +37,12 @@ class_windows() {
     jq -r --arg re "$CLASS_RE" '.[] | select(.class | test($re)) | "\(.address) \(.pid)"'
 }
 
+# Same, as "<address> <pid> <workspace name>".
+class_windows_ws() {
+  hyprctl clients -j 2>/dev/null | \
+    jq -r --arg re "$CLASS_RE" '.[] | select(.class | test($re)) | "\(.address) \(.pid) \(.workspace.name)"'
+}
+
 # True if the pid is a browser running on the omaxbar profile. Chromium
 # rewrites its argv as one space-joined string, so match on spaces too.
 owns_pid() {
